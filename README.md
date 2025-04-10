@@ -8,24 +8,20 @@ A pure API-based Symfony application for ingesting and managing lead data with h
 - Docker Compose
 - Git
 - k6 (for load testing)
-  ```bash
-  # macOS
-  brew install k6
-
-  # Windows & Linux
-  # Download from https://k6.io/docs/getting-started/installation
-  ```
+- Postman (for API testing)
 
 ## 🚀 Quick Start
 
 ```bash
-# Clone and build the project
+# Clone the repository
 git clone https://github.com/Khrischatyy/l2-test.git
 cd l2-test
 
-# Add the .env file (provided separately via email for security)
-# Place the .env file in the project root directory
+# If you need a clean start (remove existing containers and volumes)
+docker compose down -v
+rm -rf vendor var
 
+# Build and start the application
 make build
 
 # The build command will:
@@ -34,6 +30,21 @@ make build
 # 3. Create database and run migrations
 # 4. Create a test user
 ```
+
+### Troubleshooting
+
+If you encounter any issues:
+
+1. Make sure no other services are using ports 8080 or 3306
+2. Ensure Docker has enough resources allocated
+3. If you get permission errors:
+   ```bash
+   sudo chown -R $(id -u):$(id -g) .
+   ```
+4. For cache issues:
+   ```bash
+   make clear-cache
+   ```
 
 ## 🔑 Authentication
 
@@ -56,6 +67,11 @@ Content-Type: application/json
     "email": "test@example.com",
     "password": "password123"
 }
+
+Response:
+{
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1..."
+}
 ```
 
 ### Lead Management
@@ -72,7 +88,8 @@ Content-Type: application/json
     "phone": "+1234567890",
     "dateOfBirth": "1990-01-01",
     "additionalData": {
-        "source": "website"
+        "source": "website",
+        "custom_field": "value"
     }
 }
 
@@ -81,132 +98,139 @@ GET /api/leads?page=1&limit=10&sortBy=createdAt&sortOrder=DESC
 Authorization: Bearer <jwt_token>
 ```
 
-## 🛠 Development Commands
+### Error Codes
+```json
+400 Bad Request
+{
+    "status": "error",
+    "message": "Validation failed",
+    "errors": {
+        "email": ["This value is not a valid email address"],
+        "phone": ["This value should match pattern: /^\\+?[1-9]\\d{1,14}$/"]
+    }
+}
 
-```bash
-# Project Management
-make help              # Show all available commands
-make build             # Build and set up the project
-make start            # Start containers
-make stop             # Stop containers
-make restart          # Restart containers
-make logs             # View container logs
-make clear-cache      # Clear application cache
+401 Unauthorized
+{
+    "code": 401,
+    "message": "JWT Token not found"
+}
 
-# API Monitoring
-make api-logs          # Show last 10 API requests
-make api-logs-errors   # Show last 10 API errors
-make api-logs-full     # Show detailed log info by ID
-make api-request-data  # Show full request/response JSON data
+403 Forbidden
+{
+    "code": 403,
+    "message": "Invalid JWT Token"
+}
+
+429 Too Many Requests
+{
+    "status": "error",
+    "message": "Rate limit exceeded",
+    "retry_after": 60
+}
 ```
 
-## 🔍 Monitoring & Debugging
-
-### API Logs
-Every API request is logged with:
-- Request headers, body, and query parameters
-- Response data and status codes
-- Processing time metrics
-- IP address and user agent
-
-View logs using:
-```bash
-make api-logs              # Recent requests
-make api-logs-errors       # Error logs only
-make api-request-data      # Full request/response data
-```
-
-### Performance Metrics
-- Redis caching for optimized responses
-- Request processing time tracking
-- Detailed error logging in development mode
-
-## ⚠️ System Limits & Security
-
-### Rate Limits
+### Rate Limiting
 - 1000 requests per minute per IP
-- Maximum payload: 10MB
-- Batch processing: 1000 leads max
+- Headers returned:
+  ```
+  X-RateLimit-Limit: 1000
+  X-RateLimit-Remaining: 999
+  X-RateLimit-Reset: 60
+  ```
 
-### Security
-- JWT-based authentication
-- Token expiry: 1 hour
-- HTTPS required in production
-- Sensitive data in `.env` (provided via email)
+## 🔍 Monitoring
 
-### Caching
-- Redis-based caching
-- Cache lifetime: 1 hour
-- Manual cache clear: `make clear-cache`
-
-## 📦 Development Tools
-
-### Postman Collection
-Located at `postman/Lead Management API.postman_collection.json`:
-- Pre-configured environments
-- Automatic JWT token handling
-- Example requests for all endpoints
-
-### Important Files
-- `.env` - Environment configuration (provided separately)
-- `docker-compose.yml` - Container configuration
-- `Makefile` - Development commands
-- `config/packages/` - Application configuration
-
-### Version Control
-- `.env` file is NOT included in repository
-- `symfony.lock` and `composer.lock` should be committed
-- Exclude `var/`, `vendor/`, and `data/` directories
+```bash
+make api-logs          # Last 10 requests
+make api-logs-errors   # Error logs
+make api-request-data  # Full request/response data
+```
 
 ## 🚀 Performance Testing
 
 ![Load Test Performance](docs/assets/load-test.gif)
 
-### Latest Test Results
-
+### Test Results
 ```
 █ THRESHOLDS 
   ✓ errors: rate<0.1 (0.00%)
   ✓ http_req_duration: p(95)<2000ms (actual: 25.42ms)
 
-█ PERFORMANCE METRICS
+█ METRICS
   ✓ Requests/second: 54.79/s
   ✓ Average response time: 18.3ms
   ✓ Success rate: 100%
-  ✓ Total requests: 16,471
-  ✓ Data throughput: 56 kB/s received, 62 kB/s sent
 ```
 
 ### Running Tests
-
-Choose the appropriate test command based on your needs:
-
 ```bash
-make load-test           # Run complete test suite (all scenarios)
-make load-test-sustained # Test steady load (1000 req/min, 5 min)
-make load-test-spike     # Test traffic spikes (1000→1800→1000 req/min)
+make load-test           # Run complete test suite
+make load-test-sustained # Test steady load
+make load-test-spike    # Test traffic spikes
 ```
 
-### Test Types
+## 📈 Scaling Recommendations
 
-1. **Complete Suite** (`make load-test`)
-   - Runs all test scenarios in sequence
-   - Best for comprehensive performance validation
-   - Total duration: ~7.5 minutes
+### Application Level
+- Enable OPcache in production
+- Use APCu for application caching
+- Configure PHP-FPM process manager:
+  ```ini
+  pm = dynamic
+  pm.max_children = 50
+  pm.start_servers = 5
+  pm.min_spare_servers = 5
+  pm.max_spare_servers = 35
+  ```
 
-2. **Sustained Load** (`make load-test-sustained`)
-   - Constant rate: 17 RPS (1000+ per minute)
-   - Duration: 5 minutes
-   - Best for: Validating steady-state performance
-   - Actual p95 response time: 25.42ms
+### Database
+- Master-Slave replication for read scaling
+- Partitioning leads table by date
+- Index optimization:
+  ```sql
+  CREATE INDEX idx_leads_created_at ON leads (created_at);
+  CREATE INDEX idx_leads_email ON leads (email);
+  ```
 
-3. **Spike Test** (`make load-test-spike`)
-   - Tests system's ability to handle traffic spikes
-   - Duration: 2.5 minutes
-   - Pattern:
-     ```
-     1min: Normal load (17 RPS)
-     30s:  High load (30 RPS)
-     1min: Recovery period
-     ```
-   - Best for: Testing system recovery & stability
+### Caching
+- Redis cluster for horizontal scaling
+- Cache invalidation strategy:
+  ```php
+  Cache-Control: public, max-age=3600
+  Etag: "hash_of_content"
+  ```
+
+### Load Balancing
+- Nginx with upstream configuration
+- Session affinity for JWT tokens
+- Health checks:
+  ```nginx
+  health_check interval=5s fails=3;
+  ```
+
+### Monitoring
+- Prometheus metrics
+- Grafana dashboards
+- Alert thresholds:
+  - Response time > 500ms
+  - Error rate > 1%
+  - CPU load > 80%
+
+## 📡 API Documentation
+
+### Using Postman
+
+![Postman Usage Guide](docs/assets/postman.gif)
+
+A complete Postman collection is available at `postman/Lead Management API.postman_collection.json` with:
+- Pre-configured environments
+- Automatic JWT token handling
+- Example requests for all endpoints
+- Response validation examples
+
+To use the collection:
+1. Import `postman/Lead Management API.postman_collection.json` into Postman
+2. Set up environment variables:
+   - `baseUrl`: `http://localhost:8080`
+   - `token`: Will be automatically set after login

@@ -16,10 +16,18 @@ build: ## Build and start containers, run migrations, create test user
 	@echo "$(YELLOW)Waiting for containers to be ready...$(NC)"
 	sleep 5
 	docker compose exec php composer install
+	@echo "$(YELLOW)Setting up environment...$(NC)"
+	docker compose exec php cp .env.dist .env
+	@echo "$(YELLOW)Generating JWT keys...$(NC)"
+	docker compose exec php mkdir -p config/jwt
+	docker compose exec php openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:your_jwt_passphrase
+	docker compose exec php openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:your_jwt_passphrase
+	docker compose exec php chmod 644 config/jwt/public.pem
+	docker compose exec php chmod 600 config/jwt/private.pem
 	docker compose exec php bin/console doctrine:database:create --if-not-exists
 	docker compose exec php bin/console doctrine:migrations:migrate --no-interaction
-	docker compose exec php bin/console app:create-user test@example.com password123
-	@echo "$(GREEN)Build complete! Test user created with:$(NC)"
+	-docker compose exec php bin/console app:create-user test@example.com password123 || true
+	@echo "$(GREEN)Build complete! Use these credentials:$(NC)"
 	@echo "Email: test@example.com"
 	@echo "Password: password123"
 
