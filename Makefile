@@ -19,9 +19,10 @@ build: ## Build and start containers, run migrations, create test user
 	@echo "$(YELLOW)Setting up environment...$(NC)"
 	docker compose exec php cp .env.dist .env
 	@echo "$(YELLOW)Generating JWT keys...$(NC)"
+	docker compose exec php rm -f config/jwt/*.pem
 	docker compose exec php mkdir -p config/jwt
-	docker compose exec php openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:your_jwt_passphrase
-	docker compose exec php openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:your_jwt_passphrase
+	docker compose exec php openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:123456
+	docker compose exec php openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:123456
 	docker compose exec php chmod 644 config/jwt/public.pem
 	docker compose exec php chmod 600 config/jwt/private.pem
 	docker compose exec php bin/console doctrine:database:create --if-not-exists
@@ -118,4 +119,4 @@ load-test-sustained:
 
 load-test-spike:
 	@echo "$(YELLOW)Running spike test...$(NC)"
-	@k6 run --tag testType=spike tests/k6/load-test.js -e SCENARIO=spike_test 
+	@k6 run --tag testType=spike tests/k6/load-test.js -e SCENARIO=spike_test
