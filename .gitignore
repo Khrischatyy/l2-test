@@ -1,0 +1,138 @@
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Environment files
+.env
+.env.*
+!.env.dist
+
+# Cache and logs
+/var/
+/var/cache/*
+/var/log/*
+!var/cache/.gitkeep
+!var/log/.gitkeep
+
+# Dependencies
+/vendor/
+/node_modules/
+/public/bundles/
+
+# Testing
+/phpunit.xml
+.phpunit.result.cache
+/coverage/
+
+# JWT keys
+/config/jwt/*.pem
+!/config/jwt/.gitkeep
+
+# Docker
+docker-compose.override.yml
+
+# System Files
+.DS_Store
+Thumbs.db
+*~
+
+# Cache, logs and temporary files
+/var/sessions/*
+!var/sessions/.gitkeep
+
+# Parameters and environment files
+/.env.local
+/.env.local.php
+/.env.*.local
+/.env.test
+/config/secrets/*
+!config/secrets/.gitkeep
+
+# IDE and editor files
+*.sublime-workspace
+*.sublime-project
+.phpunit.result.cache
+.php-cs-fixer.cache
+.php_cs.cache
+.php_cs
+.phplint.cache
+
+# Docker
+.docker/.env.local
+.docker-sync/
+
+# Testing
+/phpunit.xml
+.phpunit.result.cache
+/coverage/
+
+# Build files
+/public/build/
+/public/dist/
+/node_modules/
+/assets/node_modules/
+
+# Composer
+composer.phar
+/auth.json
+
+# Symfony specific
+###> symfony/framework-bundle ###
+.env
+.env.*
+!.env.dist
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+# Application specific
+/public/uploads/*
+!public/uploads/.gitkeep
+
+# SSL/TLS certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.srl
+*.der
+*.priv
+*.pub
+
+# Backup files
+*.bak
+*.backup
+*~
+*.old
+*.orig
+
+# Local development files
+docker-compose.override.yml
+phpunit.xml.dist
+.php-version
+.tool-versions
+
+# Cache and logs
+supervisord.log
+supervisord.pid
+npm-debug.log
+yarn-error.log
+*.log
+*.cache
+
+# New additions
+.env.*
+!.env.dist
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ### 

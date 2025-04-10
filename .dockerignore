@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+.idea
+.vscode
+docker/
+vendor/
+var/
+node_modules/
+tests/
+*.md
+*.cache 

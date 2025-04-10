@@ -1,0 +1,13 @@
+framework:
+    messenger:
+        default_bus: messenger.bus.default
+        buses:
+            messenger.bus.default:
+                middleware:
+                    - doctrine_transaction
+                    - validation
+                    - doctrine_ping_connection
+        transports:
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+        routing:
+            'App\Message\LeadMessage': async 

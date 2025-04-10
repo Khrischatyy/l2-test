@@ -1,0 +1,10 @@
+framework:
+    cache:
+        default_psr6_provider: cache.adapter.filesystem
+        system: cache.adapter.system
+        directory: '%kernel.cache_dir%/pools'
+        pools:
+            lead_cache:
+                adapter: cache.adapter.filesystem
+                default_lifetime: 3600
+                public: true 
