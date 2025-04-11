@@ -38,6 +38,10 @@ start: ## Start containers
 stop: ## Stop containers
 	docker compose down
 
+clean:
+	docker compose down -v
+	rm -rf vendor var
+
 restart: stop start ## Restart containers
 
 logs: ## Show logs from all containers

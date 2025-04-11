@@ -32,12 +32,7 @@ final class Version20240301000000 extends AbstractMigration
             INDEX IDX_api_logs_monitor (status_code, created_at, method),
             -- Index for time-based queries and cleanup
             INDEX IDX_api_logs_created (created_at)
-        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` 
-        ENGINE = InnoDB
-        PARTITION BY RANGE (TO_DAYS(created_at)) (
-            PARTITION p_old VALUES LESS THAN (TO_DAYS(NOW() - INTERVAL 30 DAY)),
-            PARTITION p_current VALUES LESS THAN MAXVALUE
-        )');
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         $this->addSql('CREATE TABLE leads (
             id INT AUTO_INCREMENT NOT NULL,
