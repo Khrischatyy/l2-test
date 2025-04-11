@@ -112,7 +112,6 @@ composer.phar
 
 # Local development files
 docker-compose.override.yml
-phpunit.xml.dist
 .php-version
 .tool-versions
 

@@ -234,3 +234,41 @@ To use the collection:
 2. Set up environment variables:
    - `baseUrl`: `http://localhost:8080`
    - `token`: Will be automatically set after login
+
+## Testing
+
+### Unit Tests
+
+The application includes a comprehensive suite of unit tests to ensure code quality and reliability. Tests are organized in the `tests/` directory following the same structure as the source code.
+
+#### Running Tests
+
+To run the unit tests:
+
+```bash
+make test-unit
+```
+
+This will execute all unit tests in the project. The test suite includes:
+
+- Entity tests (e.g., `LeadTest`)
+- Command tests (e.g., `CreateUserCommandTest`)
+- API request/response tests
+
+#### Test Structure
+
+- `tests/Entity/` - Tests for Doctrine entities
+- `tests/Command/` - Tests for Symfony console commands
+- `tests/Constants/` - Test constants used across tests
+
+#### Test Configuration
+
+The project uses PHPUnit for testing with the following configuration:
+- Test environment: `APP_ENV=test`
+- Code coverage reporting enabled
+- Strict testing mode enabled
+- Random test execution order
+
+#### Test Results
+
+![Unit Tests Success](docs/images/unit-tests-success.png)

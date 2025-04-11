@@ -1,4 +1,4 @@
-.PHONY: build start stop restart logs test-user api-logs api-logs-errors api-logs-full api-request-data clear-cache postman-setup load-test help
+.PHONY: build start stop restart logs test test-unit test-load api-logs api-logs-errors api-logs-full api-request-data clear-cache postman-setup load-test help
 
 # Colors for pretty output
 YELLOW := \033[1;33m
@@ -120,3 +120,13 @@ load-test-sustained:
 load-test-spike:
 	@echo "$(YELLOW)Running spike test...$(NC)"
 	@k6 run --tag testType=spike tests/k6/load-test.js -e SCENARIO=spike_test
+
+test: test-unit test-load ## Run all tests (unit and load)
+
+test-unit: ## Run unit tests
+	@echo "$(YELLOW)Running unit tests...$(NC)"
+	docker compose exec php vendor/bin/phpunit -c phpunit.xml.dist
+
+test-load: ## Run load tests
+	@echo "$(YELLOW)Running load tests...$(NC)"
+	k6 run tests/k6/load-test.js

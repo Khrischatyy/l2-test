@@ -59,6 +59,14 @@ class Lead implements \JsonSerializable
     #[Groups(['lead:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\ManyToOne(targetEntity: ApiRequest::class)]
+    #[ORM\JoinColumn(name: 'created_by_request_id', referencedColumnName: 'id')]
+    private ?ApiRequest $createdByRequest = null;
+
+    #[ORM\ManyToOne(targetEntity: ApiRequest::class)]
+    #[ORM\JoinColumn(name: 'last_modified_by_request_id', referencedColumnName: 'id')]
+    private ?ApiRequest $lastModifiedByRequest = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -141,9 +149,43 @@ class Lead implements \JsonSerializable
         return $this->createdAt;
     }
 
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getCreatedByRequest(): ?ApiRequest
+    {
+        return $this->createdByRequest;
+    }
+
+    public function setCreatedByRequest(?ApiRequest $createdByRequest): self
+    {
+        $this->createdByRequest = $createdByRequest;
+        return $this;
+    }
+
+    public function getLastModifiedByRequest(): ?ApiRequest
+    {
+        return $this->lastModifiedByRequest;
+    }
+
+    public function setLastModifiedByRequest(?ApiRequest $lastModifiedByRequest): self
+    {
+        $this->lastModifiedByRequest = $lastModifiedByRequest;
+        return $this;
     }
 
     #[ORM\PreUpdate]
