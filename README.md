@@ -59,6 +59,8 @@ After login, you'll receive a JWT token valid for 1 hour.
 ## 📡 API Endpoints
 
 ### Authentication
+
+#### Login
 ```http
 POST /api/login_check
 Content-Type: application/json
@@ -67,16 +69,29 @@ Content-Type: application/json
     "email": "test@example.com",
     "password": "password123"
 }
+```
 
-Response:
+**Response (Success)**
+```json
 {
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1..."
 }
 ```
 
+**Response (Error)**
+```json
+{
+    "status": "error",
+    "code": 401,
+    "message": "Invalid credentials",
+    "errors": {}
+}
+```
+
 ### Lead Management
+
+#### Create Lead
 ```http
-# Create Lead
 POST /api/leads
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
@@ -92,8 +107,10 @@ Content-Type: application/json
         "custom_field": "value"
     }
 }
+```
 
-Response (Success):
+**Response (Success)**
+```json
 {
     "status": "success",
     "code": 201,
@@ -106,12 +123,16 @@ Response (Success):
         "createdAt": "2024-03-20T10:00:00+00:00"
     }
 }
+```
 
-# List Leads
+#### List Leads
+```http
 GET /api/leads?page=1&limit=10&sortBy=createdAt&sortOrder=DESC
 Authorization: Bearer <jwt_token>
+```
 
-Response (Success):
+**Response (Success)**
+```json
 {
     "status": "success",
     "code": 200,
@@ -135,6 +156,14 @@ Response (Success):
     }
 }
 ```
+
+**Query Parameters**
+| Parameter | Type   | Description                    | Default |
+|-----------|--------|--------------------------------|---------|
+| page      | int    | Page number                    | 1       |
+| limit     | int    | Items per page                 | 10      |
+| sortBy    | string | Field to sort by               | createdAt|
+| sortOrder | string | Sort direction (ASC/DESC)      | DESC    |
 
 ### Error Responses
 
@@ -307,6 +336,20 @@ make load-test-spike    # Test traffic spikes
   - Error rate > 1%
   - CPU load > 80%
 
+### Architecture
+- Implement database replication and failover:
+  - Master-Slave setup with automatic failover
+  - Read replicas for scaling read operations
+  - Regular backups with point-in-time recovery
+- Consider microservices approach:
+  - Separate write and read services
+  - Event-driven architecture for better scalability
+  - Message queues for async processing
+- High availability setup:
+  - Multiple availability zones
+  - Load balancers with health checks
+  - Circuit breakers for service resilience
+
 ## 📡 API Documentation
 
 ### Using Postman
@@ -362,22 +405,3 @@ The project uses PHPUnit for testing with the following configuration:
 #### Test Results
 
 ![Unit Tests Success](docs/images/unit-tests-success.png)
-
-## API Response Format
-
-All API endpoints return responses in a consistent format:
-
-### Success Response Structure
-```json
-{
-    "status": "success",
-    "code": 201,
-    "message": "Operation successful message",
-    "data": {
-        // Response data object
-    }
-}
-```
-
-### Error Response Structure
-```
