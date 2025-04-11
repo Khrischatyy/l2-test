@@ -31,6 +31,8 @@ make build
 # 4. Create a test user
 ```
 
+![Build Process](docs/assets/build.gif)
+
 ### Troubleshooting
 
 If you encounter any issues:
@@ -45,6 +47,22 @@ If you encounter any issues:
    ```bash
    make clear-cache
    ```
+
+### Using Postman
+
+![Postman Usage Guide](docs/assets/postman.gif)
+
+A complete Postman collection is available at `postman/Lead Management API.postman_collection.json` with:
+- Pre-configured environments
+- Automatic JWT token handling
+- Example requests for all endpoints
+- Response validation examples
+
+To use the collection:
+1. Import `postman/Lead Management API.postman_collection.json` into Postman
+2. Set up environment variables:
+    - `baseUrl`: `http://localhost:8080`
+    - `token`: Will be automatically set after login
 
 ## 🔑 Authentication
 
@@ -352,21 +370,6 @@ make load-test-spike    # Test traffic spikes
 
 ## 📡 API Documentation
 
-### Using Postman
-
-![Postman Usage Guide](docs/assets/postman.gif)
-
-A complete Postman collection is available at `postman/Lead Management API.postman_collection.json` with:
-- Pre-configured environments
-- Automatic JWT token handling
-- Example requests for all endpoints
-- Response validation examples
-
-To use the collection:
-1. Import `postman/Lead Management API.postman_collection.json` into Postman
-2. Set up environment variables:
-   - `baseUrl`: `http://localhost:8080`
-   - `token`: Will be automatically set after login
 
 ## Testing
 
