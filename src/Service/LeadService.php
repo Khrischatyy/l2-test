@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Lead;
 use App\Exception\ValidationException;
+use App\Exception\DuplicateLeadException;
 use App\Repository\LeadRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -35,11 +36,17 @@ class LeadService
                 throw new ValidationException($violations);
             }
 
-            // Use cache for rate limiting and duplicate prevention
+            // Check for existing lead with same email
+            $existingLead = $this->leadRepository->findOneBy(['email' => $lead->getEmail()]);
+            if ($existingLead) {
+                throw new DuplicateLeadException('A lead with this email already exists');
+            }
+
+            // Use cache for rate limiting
             $cacheKey = 'lead_' . md5($lead->getEmail() . $lead->getPhone());
             $item = $this->cache->getItem($cacheKey);
             if ($item->isHit()) {
-                throw new \RuntimeException('Duplicate submission or rate limit exceeded');
+                throw new DuplicateLeadException('Rate limit exceeded. Please try again later.');
             }
             
             $this->entityManager->beginTransaction();

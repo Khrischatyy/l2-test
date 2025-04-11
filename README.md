@@ -93,16 +93,71 @@ Content-Type: application/json
     }
 }
 
+Response (Success):
+{
+    "status": "success",
+    "code": 201,
+    "message": "Lead created successfully",
+    "data": {
+        "id": 1,
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "createdAt": "2024-03-20T10:00:00+00:00"
+    }
+}
+
 # List Leads
 GET /api/leads?page=1&limit=10&sortBy=createdAt&sortOrder=DESC
 Authorization: Bearer <jwt_token>
+
+Response (Success):
+{
+    "status": "success",
+    "code": 200,
+    "message": "Leads retrieved successfully",
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "firstName": "John",
+                "lastName": "Doe",
+                "email": "john@example.com",
+                "createdAt": "2024-03-20T10:00:00+00:00"
+            }
+        ],
+        "pagination": {
+            "total": 100,
+            "page": 1,
+            "limit": 10,
+            "pages": 10
+        }
+    }
+}
 ```
 
-### Error Codes
+### Error Responses
+
+All error responses follow a consistent format:
+
 ```json
-400 Bad Request
 {
     "status": "error",
+    "code": <http_status_code>,
+    "message": "<error_message>",
+    "errors": {
+        "<field>": ["<error_detail>"]
+    }
+}
+```
+
+Common error scenarios:
+
+```json
+# 400 Bad Request (Validation Error)
+{
+    "status": "error",
+    "code": 400,
     "message": "Validation failed",
     "errors": {
         "email": ["This value is not a valid email address"],
@@ -110,34 +165,69 @@ Authorization: Bearer <jwt_token>
     }
 }
 
-401 Unauthorized
-{
-    "code": 401,
-    "message": "JWT Token not found"
-}
-
-403 Forbidden
-{
-    "code": 403,
-    "message": "Invalid JWT Token"
-}
-
-429 Too Many Requests
+# 401 Unauthorized
 {
     "status": "error",
+    "code": 401,
+    "message": "JWT Token not found",
+    "errors": {}
+}
+
+# 403 Forbidden
+{
+    "status": "error",
+    "code": 403,
+    "message": "Invalid JWT Token",
+    "errors": {}
+}
+
+# 409 Conflict (Duplicate Lead)
+{
+    "status": "error",
+    "code": 409,
+    "message": "Duplicate lead detected",
+    "errors": {
+        "email": ["A lead with this email already exists"]
+    }
+}
+
+# 429 Too Many Requests
+{
+    "status": "error",
+    "code": 429,
     "message": "Rate limit exceeded",
-    "retry_after": 60
+    "errors": {
+        "retry_after": 60
+    }
+}
+
+# 500 Internal Server Error
+{
+    "status": "error",
+    "code": 500,
+    "message": "An error occurred while processing the request",
+    "errors": {}
 }
 ```
 
-### Rate Limiting
-- 1000 requests per minute per IP
-- Headers returned:
-  ```
-  X-RateLimit-Limit: 1000
-  X-RateLimit-Remaining: 999
-  X-RateLimit-Reset: 60
-  ```
+### Development Environment Debug Information
+
+In development environment, error responses may include additional debug information:
+
+```json
+{
+    "status": "error",
+    "code": 500,
+    "message": "An error occurred while processing the request",
+    "errors": {},
+    "debug": {
+        "exception": "App\\Exception\\DatabaseException",
+        "message": "Database connection failed",
+        "file": "/app/src/Service/LeadService.php",
+        "line": 42
+    }
+}
+```
 
 ## 🔍 Monitoring
 
@@ -272,3 +362,22 @@ The project uses PHPUnit for testing with the following configuration:
 #### Test Results
 
 ![Unit Tests Success](docs/images/unit-tests-success.png)
+
+## API Response Format
+
+All API endpoints return responses in a consistent format:
+
+### Success Response Structure
+```json
+{
+    "status": "success",
+    "code": 201,
+    "message": "Operation successful message",
+    "data": {
+        // Response data object
+    }
+}
+```
+
+### Error Response Structure
+```
