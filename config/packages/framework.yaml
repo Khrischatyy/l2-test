@@ -16,6 +16,17 @@ framework:
     php_errors:
         log: true
 
+    serializer:
+        enabled: true
+        mapping:
+            paths: ['%kernel.project_dir%/src/Entity']
+
+    messenger:
+        transports:
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+        routing:
+            'App\Message\LeadMessage': async
+
 when@test:
     framework:
         test: true

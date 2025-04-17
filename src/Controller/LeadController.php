@@ -11,16 +11,24 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use App\Exception\ValidationException;
 use App\Exception\DuplicateLeadException;
 
 #[Route('/api')]
 class LeadController extends AbstractController
 {
+    /**
+     * @var EncoderInterface
+     */
+    private $jsonEncoder;
+
     public function __construct(
         private LeadService $leadService,
-        private ApiLogService $apiLogService
+        private ApiLogService $apiLogService,
+        EncoderInterface $jsonEncoder
     ) {
+        $this->jsonEncoder = $jsonEncoder;
     }
 
     #[Route('/leads', name: 'create_lead', methods: ['POST'])]
@@ -35,16 +43,10 @@ class LeadController extends AbstractController
                 'status' => 'success',
                 'code' => Response::HTTP_CREATED,
                 'message' => 'Lead created successfully',
-                'data' => [
-                    'id' => $lead->getId(),
-                    'firstName' => $lead->getFirstName(),
-                    'lastName' => $lead->getLastName(),
-                    'email' => $lead->getEmail(),
-                    'createdAt' => $lead->getCreatedAt()->format('Y-m-d H:i:s')
-                ]
+                'data' => $this->jsonEncoder->encode($lead, 'json')
             ];
-            $this->apiLogService->log($request, $responseData, Response::HTTP_CREATED);
             
+            $this->apiLogService->log($request, $responseData, Response::HTTP_CREATED);
             return $this->json($responseData, Response::HTTP_CREATED);
 
         } catch (ValidationException $e) {
@@ -52,7 +54,7 @@ class LeadController extends AbstractController
                 'status' => 'error',
                 'code' => Response::HTTP_BAD_REQUEST,
                 'message' => 'Validation failed',
-                'errors' => $e->getViolations()
+                'errors' => $this->jsonEncoder->encode($e->getViolations(), 'json')
             ];
             $this->apiLogService->log($request, $responseData, Response::HTTP_BAD_REQUEST);
             return $this->json($responseData, Response::HTTP_BAD_REQUEST);
@@ -115,7 +117,7 @@ class LeadController extends AbstractController
                 'code' => Response::HTTP_OK,
                 'message' => 'Leads retrieved successfully',
                 'data' => [
-                    'items' => $result['data'],
+                    'items' => $this->jsonEncoder->encode($result['data'], 'json'),
                     'pagination' => $result['pagination']
                 ]
             ];
