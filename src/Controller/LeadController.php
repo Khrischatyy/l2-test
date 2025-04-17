@@ -18,18 +18,11 @@ use App\Exception\DuplicateLeadException;
 #[Route('/api')]
 class LeadController extends AbstractController
 {
-    /**
-     * @var EncoderInterface
-     */
-    private $jsonEncoder;
-
     public function __construct(
         private LeadService $leadService,
         private ApiLogService $apiLogService,
-        EncoderInterface $jsonEncoder
-    ) {
-        $this->jsonEncoder = $jsonEncoder;
-    }
+        private EncoderInterface $jsonEncoder
+    ) {}
 
     #[Route('/leads', name: 'create_lead', methods: ['POST'])]
     public function create(
@@ -38,14 +31,14 @@ class LeadController extends AbstractController
     ): JsonResponse {
         try {
             $lead = $this->leadService->createLead($dto);
-            
+
             $responseData = [
                 'status' => 'success',
                 'code' => Response::HTTP_CREATED,
                 'message' => 'Lead created successfully',
                 'data' => $this->jsonEncoder->encode($lead, 'json')
             ];
-            
+
             $this->apiLogService->log($request, $responseData, Response::HTTP_CREATED);
             return $this->json($responseData, Response::HTTP_CREATED);
 
@@ -102,7 +95,7 @@ class LeadController extends AbstractController
             // Validate sort parameters
             $allowedSortFields = ['createdAt', 'firstName', 'lastName', 'email'];
             $allowedSortOrders = ['ASC', 'DESC'];
-            
+
             if (!in_array($sortBy, $allowedSortFields)) {
                 throw new \InvalidArgumentException('Invalid sort field');
             }
@@ -111,7 +104,7 @@ class LeadController extends AbstractController
             }
 
             $result = $this->leadService->getLeads($page, $limit, $sortBy, $sortOrder);
-            
+
             $responseData = [
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
@@ -121,7 +114,7 @@ class LeadController extends AbstractController
                     'pagination' => $result['pagination']
                 ]
             ];
-            
+
             $this->apiLogService->log($request, $responseData, Response::HTTP_OK);
             return $this->json($responseData, Response::HTTP_OK);
 
@@ -154,4 +147,4 @@ class LeadController extends AbstractController
             return $this->json($responseData, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-} 
+}

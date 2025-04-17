@@ -15,26 +15,19 @@ use Psr\Log\LoggerInterface;
 class LeadService
 {
     /**
-     * @var ValidatorInterface
-     */
-    private $validator;
-
-    /**
      * Constructor with required dependencies
      */
     public function __construct(
         private EntityManagerInterface $entityManager,
-        ValidatorInterface $validator,
+        private ValidatorInterface $validator,
         private CacheItemPoolInterface $cache,
         private LoggerInterface $logger,
         private LeadRepository $leadRepository
-    ) {
-        $this->validator = $validator;
-    }
+    ) {}
 
     /**
      * Creates a new lead from DTO
-     * 
+     *
      * @param CreateLeadDTO $dto The data transfer object containing lead information
      * @return Lead The created lead entity
      * @throws ValidationException When validation fails
@@ -43,11 +36,11 @@ class LeadService
     public function createLead(CreateLeadDTO $dto): Lead
     {
         $this->logger->info('Creating new lead', ['data' => array_diff_key((array)$dto, ['dateOfBirth' => true])]);
-        
+
         try {
             $lead = new Lead();
             $this->hydrateLead($lead, $dto);
-            
+
             // Validate the entity using injected validator
             $violations = $this->validator->validate($lead);
             if (count($violations) > 0) {
@@ -66,17 +59,17 @@ class LeadService
             if ($item->isHit()) {
                 throw new DuplicateLeadException('Rate limit exceeded. Please try again later.');
             }
-            
+
             $this->entityManager->beginTransaction();
             try {
                 $this->entityManager->persist($lead);
                 $this->entityManager->flush();
-                
+
                 // Cache the submission for rate limiting
                 $item->set(true);
                 $item->expiresAfter(60); // 1 minute rate limiting window
                 $this->cache->save($item);
-                
+
                 $this->entityManager->commit();
             } catch (\Exception $e) {
                 $this->entityManager->rollback();
@@ -111,7 +104,7 @@ class LeadService
         );
 
         $total = $this->leadRepository->count([]);
-        
+
         $result = [
             'data' => $leads,
             'pagination' => [
@@ -131,7 +124,7 @@ class LeadService
 
     /**
      * Hydrates lead entity with data from DTO
-     * 
+     *
      * @param Lead $lead The lead entity to hydrate
      * @param CreateLeadDTO $dto The data transfer object
      */
@@ -141,10 +134,10 @@ class LeadService
         $lead->setLastName($dto->lastName);
         $lead->setEmail($dto->email);
         $lead->setPhone($dto->phone);
-        
+
         // Date validation is handled by Assert\Date in DTO
         $lead->setDateOfBirth(new \DateTime($dto->dateOfBirth));
-        
+
         $lead->setAdditionalData($dto->additionalData);
     }
-} 
+}
