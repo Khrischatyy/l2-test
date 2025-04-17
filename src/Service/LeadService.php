@@ -14,15 +14,32 @@ use Psr\Log\LoggerInterface;
 
 class LeadService
 {
+    /**
+     * @var ValidatorInterface
+     */
+    private $validator;
+
+    /**
+     * Constructor with required dependencies
+     */
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private ValidatorInterface $validator,
+        ValidatorInterface $validator,
         private CacheItemPoolInterface $cache,
         private LoggerInterface $logger,
         private LeadRepository $leadRepository
     ) {
+        $this->validator = $validator;
     }
 
+    /**
+     * Creates a new lead from DTO
+     * 
+     * @param CreateLeadDTO $dto The data transfer object containing lead information
+     * @return Lead The created lead entity
+     * @throws ValidationException When validation fails
+     * @throws DuplicateLeadException When lead with same email exists
+     */
     public function createLead(CreateLeadDTO $dto): Lead
     {
         $this->logger->info('Creating new lead', ['data' => array_diff_key((array)$dto, ['dateOfBirth' => true])]);
@@ -31,7 +48,7 @@ class LeadService
             $lead = new Lead();
             $this->hydrateLead($lead, $dto);
             
-            // Validate the entity
+            // Validate the entity using injected validator
             $violations = $this->validator->validate($lead);
             if (count($violations) > 0) {
                 throw new ValidationException($violations);
@@ -112,6 +129,12 @@ class LeadService
         return $result;
     }
 
+    /**
+     * Hydrates lead entity with data from DTO
+     * 
+     * @param Lead $lead The lead entity to hydrate
+     * @param CreateLeadDTO $dto The data transfer object
+     */
     private function hydrateLead(Lead $lead, CreateLeadDTO $dto): void
     {
         $lead->setFirstName($dto->firstName);

@@ -33,9 +33,17 @@ services:
             $namespace: 'lead_cache'
             $defaultLifetime: 3600
 
+    # Validator service configuration
+    validator:
+        class: Symfony\Component\Validator\Validator\ValidatorInterface
+        factory: ['@validator.builder', 'getValidator']
+        public: true
+
+    # LeadService configuration
     App\Service\LeadService:
         arguments:
             $cache: '@lead_cache'
+            $validator: '@validator'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones 
