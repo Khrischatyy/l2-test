@@ -6,6 +6,7 @@ use App\Entity\Lead;
 use App\Exception\ValidationException;
 use App\Exception\DuplicateLeadException;
 use App\Repository\LeadRepository;
+use App\DTO\CreateLeadDTO;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -22,13 +23,13 @@ class LeadService
     ) {
     }
 
-    public function createLead(array $data): Lead
+    public function createLead(CreateLeadDTO $dto): Lead
     {
-        $this->logger->info('Creating new lead', ['data' => array_diff_key($data, ['dateOfBirth' => true])]);
+        $this->logger->info('Creating new lead', ['data' => array_diff_key((array)$dto, ['dateOfBirth' => true])]);
         
         try {
             $lead = new Lead();
-            $this->hydrateLead($lead, $data);
+            $this->hydrateLead($lead, $dto);
             
             // Validate the entity
             $violations = $this->validator->validate($lead);
@@ -111,22 +112,16 @@ class LeadService
         return $result;
     }
 
-    private function hydrateLead(Lead $lead, array $data): void
+    private function hydrateLead(Lead $lead, CreateLeadDTO $dto): void
     {
-        $lead->setFirstName($data['firstName'] ?? '');
-        $lead->setLastName($data['lastName'] ?? '');
-        $lead->setEmail($data['email'] ?? '');
-        $lead->setPhone($data['phone'] ?? '');
+        $lead->setFirstName($dto->firstName);
+        $lead->setLastName($dto->lastName);
+        $lead->setEmail($dto->email);
+        $lead->setPhone($dto->phone);
         
-        if (!empty($data['dateOfBirth'])) {
-            try {
-                $dateOfBirth = new \DateTime($data['dateOfBirth']);
-                $lead->setDateOfBirth($dateOfBirth);
-            } catch (\Exception $e) {
-                throw new ValidationException($this->validator->validate(null, null, ['date_format']));
-            }
-        }
+        // Date validation is handled by Assert\Date in DTO
+        $lead->setDateOfBirth(new \DateTime($dto->dateOfBirth));
         
-        $lead->setAdditionalData($data['additionalData'] ?? []);
+        $lead->setAdditionalData($dto->additionalData);
     }
 } 

@@ -4,11 +4,13 @@ namespace App\Controller;
 
 use App\Service\LeadService;
 use App\Service\ApiLogService;
+use App\DTO\CreateLeadDTO;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use App\Exception\ValidationException;
 use App\Exception\DuplicateLeadException;
 
@@ -22,15 +24,12 @@ class LeadController extends AbstractController
     }
 
     #[Route('/leads', name: 'create_lead', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
-    {
+    public function create(
+        #[MapRequestPayload] CreateLeadDTO $dto,
+        Request $request
+    ): JsonResponse {
         try {
-            $data = json_decode($request->getContent(), true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \InvalidArgumentException('Invalid JSON format');
-            }
-
-            $lead = $this->leadService->createLead($data);
+            $lead = $this->leadService->createLead($dto);
             
             $responseData = [
                 'status' => 'success',
@@ -67,15 +66,6 @@ class LeadController extends AbstractController
             ];
             $this->apiLogService->log($request, $responseData, Response::HTTP_CONFLICT);
             return $this->json($responseData, Response::HTTP_CONFLICT);
-
-        } catch (\InvalidArgumentException $e) {
-            $responseData = [
-                'status' => 'error',
-                'code' => Response::HTTP_BAD_REQUEST,
-                'message' => $e->getMessage()
-            ];
-            $this->apiLogService->log($request, $responseData, Response::HTTP_BAD_REQUEST);
-            return $this->json($responseData, Response::HTTP_BAD_REQUEST);
 
         } catch (\Exception $e) {
             $responseData = [

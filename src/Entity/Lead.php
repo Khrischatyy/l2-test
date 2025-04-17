@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\LeadRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: LeadRepository::class)]
@@ -19,31 +18,22 @@ class Lead implements \JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 2, max: 255)]
     #[Groups(['lead:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 2, max: 255)]
     #[Groups(['lead:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Email]
     #[Groups(['lead:read'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank]
-    #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,14}$/')]
     #[Groups(['lead:read'])]
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Assert\NotBlank]
     #[Groups(['lead:read'])]
     private ?\DateTimeInterface $dateOfBirth = null;
 
