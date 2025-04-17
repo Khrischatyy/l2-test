@@ -8,13 +8,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: LeadRepository::class)]
-#[ORM\Table(name: 'leads', indexes: [
-    new ORM\Index(name: 'idx_email', columns: ['email']),
-    new ORM\Index(name: 'idx_created_at', columns: ['created_at']),
-    new ORM\Index(name: 'idx_updated_at', columns: ['updated_at']),
-    new ORM\Index(name: 'idx_name', columns: ['first_name', 'last_name']),
-    new ORM\Index(name: 'idx_phone', columns: ['phone'])
-])]
+#[ORM\Table(name: 'leads', options: ['row_format' => 'COMPRESSED'])]
+#[ORM\Index(name: 'IDX_leads_search', columns: ['first_name', 'last_name', 'created_at'])]
+#[ORM\Index(name: 'IDX_leads_created', columns: ['created_at'])]
+#[ORM\Index(name: 'IDX_leads_created_request', columns: ['created_by_request_id'])]
+#[ORM\Index(name: 'IDX_leads_modified_request', columns: ['last_modified_by_request_id'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_4C94A832E7927C74', columns: ['email'])]
 class Lead implements \JsonSerializable
 {
     #[ORM\Id]
